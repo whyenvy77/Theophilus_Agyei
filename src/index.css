@@ -1,0 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;300;400;500;700;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    cursor: default;
+  }
+
+  body {
+    @apply bg-[#030712] text-gray-100;
+    font-family: 'Outfit', 'JetBrains Mono', 'Fira Code', monospace;
+  }
+}
+
+@layer utilities {
+
+  /* Custom glow shadow utility */
+  .shadow-glow-cyan {
+    box-shadow: 0 0 30px rgba(0, 243, 255, 0.4);
+  }
+
+  .glitch-text {
+    text-shadow: 2px 0 #00f3ff, -2px 0 #0066ff;
+  }
+
+  @keyframes scan {
+    0% {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+
+    50% {
+      opacity: 1;
+    }
+
+    100% {
+      transform: translateY(1000%);
+      opacity: 0;
+    }
+  }
+
+  .animate-scan {
+    animation: scan 3s linear infinite;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-black/40 backdrop-blur-2xl border border-cyan-500/20 shadow-2xl;
+  }
+
+  .premium-gradient-text {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-cyan-500;
+  }
+
+  .premium-button {
+    @apply relative px-8 py-3 rounded-lg bg-cyan-600/10 border border-cyan-500/30 text-cyan-400 font-mono tracking-widest uppercase overflow-hidden transition-all duration-500 hover:bg-cyan-600/20 hover:border-cyan-400 active:scale-95;
+  }
+
+  .premium-button:hover {
+    @apply shadow-glow-cyan;
+  }
+
+  .premium-button-outline {
+    @apply px-8 py-3 rounded-lg border border-cyan-500/20 bg-cyan-950/20 text-cyan-400/80 font-mono tracking-widest uppercase transition-all duration-500 hover:bg-cyan-500/10 hover:border-cyan-500/40 hover:text-cyan-400 shadow-lg active:scale-95;
+  }
+
+  .section-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32;
+  }
+
+  .section-title {
+    @apply text-5xl lg:text-8xl font-black text-white mb-8 tracking-tighter uppercase italic;
+  }
+
+  .section-subtitle {
+    @apply text-sm font-mono font-bold uppercase tracking-[0.4em] text-cyan-400 mb-4;
+  }
+}
+
+/* Custom horizontal scroll behavior if needed */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-900;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-indigo-500/30 rounded-full hover:bg-indigo-500/50 transition-colors;
+}
