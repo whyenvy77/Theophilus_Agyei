@@ -4,6 +4,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
+import MouseFollower from "./components/MouseFollower";
 
 import Home from "./pages/Home";
 import About from "./pages/About";
@@ -19,6 +20,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100">
+      {!isPreviewPage && <MouseFollower />}
       {!isPreviewPage && <Navbar />}
 
       {/* ✅ SCROLL RESET ON ROUTE CHANGE */}

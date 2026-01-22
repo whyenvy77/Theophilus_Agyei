@@ -5,7 +5,7 @@ import { motion, useSpring, useMotionValue } from "framer-motion";
 export default function MouseFollower() {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  const [coords, setCoords] = useState({ x: 0, y: 0 });
+  const [enabled, setEnabled] = useState(false);
 
   // Smooth out the motion with spring physics
   const springConfig = { damping: 30, stiffness: 200 };
@@ -13,18 +13,36 @@ export default function MouseFollower() {
   const smoothY = useSpring(mouseY, springConfig);
 
   useEffect(() => {
+    // Always enabled for premium experience, but we can fine-tune if needed
+    setEnabled(true);
+
     const handleMouseMove = (e) => {
       mouseX.set(e.clientX);
       mouseY.set(e.clientY);
-      setCoords({ x: e.clientX, y: e.clientY });
+    };
+
+    const handleTouchMove = (e) => {
+      if (e.touches && e.touches[0]) {
+        mouseX.set(e.touches[0].clientX);
+        mouseY.set(e.touches[0].clientY);
+      }
     };
 
     window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    window.addEventListener("touchstart", handleTouchMove, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("touchstart", handleTouchMove);
+      window.removeEventListener("touchmove", handleTouchMove);
+    };
   }, [mouseX, mouseY]);
 
+  if (!enabled) return null;
+
   return (
-    <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-40 overflow-hidden">
       {/* Primary Glow Follower */}
       <motion.div
         className="absolute w-[300px] h-[300px] bg-cyan-500/10 rounded-full blur-[100px]"
@@ -49,11 +67,6 @@ export default function MouseFollower() {
         <div className="absolute w-full h-[1px] bg-cyan-500/40" />
         <div className="absolute w-[1px] h-full bg-cyan-500/40" />
         <div className="w-2 h-2 border border-cyan-400/60 rounded-sm animate-pulse" />
-
-        {/* Dynamic Coordinates */}
-        <div className="absolute top-4 left-4 font-mono text-[8px] text-cyan-500/40 tracking-tighter whitespace-nowrap">
-          X:{coords.x} Y:{coords.y}
-        </div>
       </motion.div>
 
       {/* Secondary Orbiting Ring */}
