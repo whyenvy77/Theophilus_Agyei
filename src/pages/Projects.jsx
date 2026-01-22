@@ -106,8 +106,7 @@ function rankProject(p, q) {
 
 function threatBadgeStyles(level) {
   const v = String(level || "").toUpperCase();
-  if (v === "CRITICAL")
-    return "border-red-500/30 bg-red-500/10 text-red-200";
+  if (v === "CRITICAL") return "border-red-500/30 bg-red-500/10 text-red-200";
   if (v === "HIGH") return "border-orange-500/30 bg-orange-500/10 text-orange-200";
   if (v === "LOW") return "border-emerald-500/30 bg-emerald-500/10 text-emerald-200";
   return "border-cyan-500/25 bg-cyan-500/10 text-cyan-200";
@@ -129,22 +128,32 @@ function ProjectRow({ p }) {
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-cyan-500/12 bg-black/45 backdrop-blur-xl hover:border-cyan-400/45 transition-all">
       <div className="absolute inset-x-0 top-0 h-[1px] bg-cyan-400/18" />
-      <div className="p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
+
+      {/* ✅ min-w-0 ensures truncation works + no horizontal overflow */}
+      <div className="p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-4 md:gap-6 min-w-0">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2 mb-2">
-            <span className={`px-3 py-1 rounded-full text-[10px] font-mono font-black tracking-[0.22em] uppercase border ${categoryChipStyles(p.category)}`}>
+            <span
+              className={`px-3 py-1 rounded-full text-[10px] font-mono font-black tracking-[0.22em] uppercase border ${categoryChipStyles(
+                p.category
+              )}`}
+            >
               {p.category}
             </span>
-            <span className={`px-3 py-1 rounded-full text-[10px] font-mono font-black tracking-[0.22em] uppercase border ${threatBadgeStyles(p.threatLevel)}`}>
+            <span
+              className={`px-3 py-1 rounded-full text-[10px] font-mono font-black tracking-[0.22em] uppercase border ${threatBadgeStyles(
+                p.threatLevel
+              )}`}
+            >
               {p.threatLevel}
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <h3 className="text-white font-black text-xl md:text-2xl tracking-tight truncate">
+          <div className="flex items-center gap-2 min-w-0">
+            <h3 className="text-white font-black text-lg sm:text-xl md:text-2xl tracking-tight truncate min-w-0">
               {p.title}
             </h3>
-            <ArrowUpRight size={16} className="text-cyan-300/40 group-hover:text-cyan-300 transition" />
+            <ArrowUpRight size={16} className="flex-shrink-0 text-cyan-300/40 group-hover:text-cyan-300 transition" />
           </div>
 
           <p className="text-gray-300/75 mt-2 text-sm leading-relaxed line-clamp-2">
@@ -163,14 +172,10 @@ function ProjectRow({ p }) {
           </div>
         </div>
 
-        <div className="flex gap-3 w-full md:w-auto">
+        {/* ✅ buttons stack cleanly on small screens */}
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
           {isLive ? (
-            <a
-              href={p.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 md:flex-none"
-            >
+            <a href={p.link} target="_blank" rel="noopener noreferrer" className="flex-1 md:flex-none">
               <TacticalButton isLink={false} containerClassName="w-full">
                 Live <ExternalLink size={18} />
               </TacticalButton>
@@ -184,12 +189,7 @@ function ProjectRow({ p }) {
           )}
 
           {isGit ? (
-            <a
-              href={p.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 md:flex-none"
-            >
+            <a href={p.github} target="_blank" rel="noopener noreferrer" className="flex-1 md:flex-none">
               <TacticalButton isLink={false} containerClassName="w-full">
                 GitHub <Github size={18} />
               </TacticalButton>
@@ -224,9 +224,7 @@ export default function Projects() {
       return text.includes(q);
     });
 
-    // rank by relevance (small but noticeable quality upgrade)
-    const ranked = [...searched].sort((a, b) => rankProject(b, q) - rankProject(a, q));
-    return ranked;
+    return [...searched].sort((a, b) => rankProject(b, q) - rankProject(a, q));
   }, [filter, q]);
 
   const activeFiltersCount = (filter !== "ALL" ? 1 : 0) + (q ? 1 : 0);
@@ -243,14 +241,13 @@ export default function Projects() {
   return (
     <section
       id="projects"
-      className="section-container bg-black/40 relative overflow-hidden min-h-screen py-32"
+      // ✅ Key: prevent any 1px glow overflow + fix big padding on phones
+      className="section-container bg-black/40 relative overflow-x-clip min-h-screen pt-28 sm:pt-32 pb-20"
     >
       <NetworkBackground />
 
-      {/* Clean scanline */}
       <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.10)_50%)] bg-[length:100%_4px] z-20 opacity-[0.14]" />
 
-      {/* Ambient glows */}
       <motion.div
         className="absolute -top-44 -left-44 w-[620px] h-[620px] bg-cyan-600/10 blur-[190px] rounded-full"
         animate={reduceMotion ? {} : { scale: [1, 1.15, 1], opacity: [0.22, 0.42, 0.22] }}
@@ -262,7 +259,6 @@ export default function Projects() {
         transition={reduceMotion ? {} : { duration: 11, repeat: Infinity, ease: "easeInOut" }}
       />
 
-      {/* HUD labels */}
       <div className="absolute top-10 left-10 hidden lg:block opacity-20 pointer-events-none">
         <div className="flex items-center gap-2 text-cyan-400 font-mono text-[10px] tracking-[0.3em] uppercase">
           <Activity size={12} /> PORTFOLIO_GRID: ACTIVE
@@ -278,7 +274,8 @@ export default function Projects() {
         </div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6">
+      {/* ✅ px responsive: 4 on phones, 6 above */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 min-w-0">
         {/* Header */}
         <motion.div
           initial="hidden"
@@ -286,7 +283,7 @@ export default function Projects() {
           viewport={{ once: true, amount: 0.15 }}
           variants={containerVariants}
           custom={reduceMotion}
-          className="text-center mb-14 relative"
+          className="text-center mb-12 sm:mb-14 relative"
         >
           <motion.div
             variants={itemVariants}
@@ -299,10 +296,11 @@ export default function Projects() {
             </span>
           </motion.div>
 
+          {/* ✅ safer responsive title (won’t overflow on small devices) */}
           <motion.h2
             variants={itemVariants}
             custom={reduceMotion}
-            className="text-6xl md:text-8xl font-black text-white tracking-tighter uppercase italic leading-none"
+            className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-white tracking-tighter uppercase italic leading-[0.95] break-words"
           >
             Deployed <span className="premium-gradient-text">Work</span>
           </motion.h2>
@@ -310,7 +308,7 @@ export default function Projects() {
           <motion.p
             variants={itemVariants}
             custom={reduceMotion}
-            className="text-gray-300/75 max-w-2xl mx-auto mt-5 leading-relaxed"
+            className="text-gray-300/75 max-w-2xl mx-auto mt-5 leading-relaxed text-sm sm:text-base"
           >
             A curated portfolio of security-focused and full-stack builds. Filter by category, search by tech,
             and switch views when you want a faster scan.
@@ -326,7 +324,7 @@ export default function Projects() {
           custom={reduceMotion}
           className="mb-10"
         >
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             {stats.map((s, i) => (
               <motion.div
                 key={i}
@@ -338,7 +336,7 @@ export default function Projects() {
                 <span className="text-[8px] font-mono text-cyan-500/45 uppercase tracking-[0.3em] font-black mb-1">
                   {s.label}
                 </span>
-                <span className="text-xl font-black text-white tracking-tight mb-1">
+                <span className="text-lg sm:text-xl font-black text-white tracking-tight mb-1">
                   {s.value}
                 </span>
                 <span className="text-[7px] font-mono text-cyan-300/70 font-bold uppercase tracking-widest flex items-center gap-1">
@@ -356,20 +354,18 @@ export default function Projects() {
           viewport={{ once: true, amount: 0.1 }}
           variants={containerVariants}
           custom={reduceMotion}
-          className="mb-12"
+          className="mb-10 sm:mb-12"
         >
           <motion.div
             variants={itemVariants}
             custom={reduceMotion}
-            className="group relative overflow-hidden bg-black/70 border border-cyan-500/18 rounded-[2.2rem] p-6 md:p-7 backdrop-blur-xl shadow-[0_0_32px_rgba(0,243,255,0.06)]"
+            className="group relative overflow-hidden bg-black/70 border border-cyan-500/18 rounded-[2.2rem] p-5 sm:p-6 md:p-7 backdrop-blur-xl shadow-[0_0_32px_rgba(0,243,255,0.06)] min-w-0"
           >
-            {/* Top thin highlight */}
             <div className="absolute inset-x-0 top-0 h-[1px] bg-cyan-400/18" />
 
-            <div className="flex flex-col gap-5">
-              {/* Row 1: pills + view toggle */}
-              <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
-                <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex flex-col gap-5 min-w-0">
+              <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between min-w-0">
+                <div className="flex items-center gap-3 flex-wrap min-w-0">
                   <div className="flex items-center gap-2 text-cyan-300/70 font-mono text-[10px] tracking-[0.3em] uppercase">
                     <Filter size={14} className="text-cyan-300" /> Filter
                   </div>
@@ -381,7 +377,7 @@ export default function Projects() {
                         <button
                           key={cat}
                           onClick={() => setFilter(cat)}
-                          className={`px-3 py-2 rounded-full border text-[10px] font-mono font-black uppercase tracking-[0.22em] transition
+                          className={`px-3 py-2 rounded-full border text-[10px] font-mono font-black uppercase tracking-[0.18em] sm:tracking-[0.22em] transition
                             ${
                               active
                                 ? "border-cyan-400/60 bg-cyan-500/10 text-white"
@@ -395,7 +391,6 @@ export default function Projects() {
                   </div>
                 </div>
 
-                {/* View toggle */}
                 <div className="flex items-center gap-2 self-start lg:self-auto">
                   <span className="text-cyan-200/60 font-mono text-[10px] uppercase tracking-[0.3em]">
                     View
@@ -405,7 +400,7 @@ export default function Projects() {
                     <button
                       type="button"
                       onClick={() => setView("grid")}
-                      className={`px-3 py-2 rounded-full text-[10px] font-mono font-black uppercase tracking-[0.22em] transition flex items-center gap-2
+                      className={`px-3 py-2 rounded-full text-[10px] font-mono font-black uppercase tracking-[0.18em] sm:tracking-[0.22em] transition flex items-center gap-2
                         ${view === "grid" ? "bg-cyan-500/10 text-white" : "text-cyan-200/60 hover:text-white"}`}
                       aria-label="Grid view"
                     >
@@ -415,7 +410,7 @@ export default function Projects() {
                     <button
                       type="button"
                       onClick={() => setView("list")}
-                      className={`px-3 py-2 rounded-full text-[10px] font-mono font-black uppercase tracking-[0.22em] transition flex items-center gap-2
+                      className={`px-3 py-2 rounded-full text-[10px] font-mono font-black uppercase tracking-[0.18em] sm:tracking-[0.22em] transition flex items-center gap-2
                         ${view === "list" ? "bg-cyan-500/10 text-white" : "text-cyan-200/60 hover:text-white"}`}
                       aria-label="List view"
                     >
@@ -426,22 +421,21 @@ export default function Projects() {
                 </div>
               </div>
 
-              {/* Row 2: search */}
-              <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
-                <div className="flex items-center gap-3 bg-black/40 border border-cyan-500/12 rounded-2xl px-4 py-3 w-full md:w-[520px]">
-                  <Search size={16} className="text-cyan-300/70" />
+              <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between min-w-0">
+                <div className="flex items-center gap-3 bg-black/40 border border-cyan-500/12 rounded-2xl px-4 py-3 w-full md:w-[520px] min-w-0">
+                  <Search size={16} className="text-cyan-300/70 flex-shrink-0" />
                   <input
                     type="text"
                     placeholder="Search by title, tech, or keyword..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="bg-transparent border-none outline-none text-white w-full placeholder:text-gray-500"
+                    className="bg-transparent border-none outline-none text-white w-full placeholder:text-gray-500 min-w-0"
                   />
                   {searchQuery ? (
                     <button
                       type="button"
                       onClick={clearSearch}
-                      className="p-2 rounded-xl border border-cyan-500/15 bg-black/30 text-cyan-200/60 hover:text-white hover:border-cyan-400/50 transition"
+                      className="p-2 rounded-xl border border-cyan-500/15 bg-black/30 text-cyan-200/60 hover:text-white hover:border-cyan-400/50 transition flex-shrink-0"
                       aria-label="Clear search"
                       title="Clear"
                     >
@@ -472,7 +466,6 @@ export default function Projects() {
               </div>
             </div>
 
-            {/* faint watermark */}
             <div className="absolute -bottom-10 -right-8 text-[110px] font-black opacity-[0.03] select-none pointer-events-none uppercase italic tracking-tighter">
               OPS
             </div>
@@ -487,10 +480,10 @@ export default function Projects() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.08 }}
-            className="grid md:grid-cols-2 gap-12 lg:gap-16"
+            className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 lg:gap-12"
           >
             {filteredProjects.map((p, i) => (
-              <motion.div key={i} variants={itemVariants} custom={reduceMotion}>
+              <motion.div key={i} variants={itemVariants} custom={reduceMotion} className="min-w-0">
                 <ProjectCard {...p} />
               </motion.div>
             ))}
@@ -503,23 +496,21 @@ export default function Projects() {
           </div>
         )}
 
-        {/* Empty state */}
         {filteredProjects.length === 0 && (
           <div className="text-center py-20 border border-dashed border-cyan-500/20 rounded-3xl mt-10 bg-black/30 backdrop-blur-md">
-            <p className="font-mono text-cyan-200/60 uppercase tracking-[0.4em] text-sm">
+            <p className="font-mono text-cyan-200/60 uppercase tracking-[0.25em] sm:tracking-[0.4em] text-sm">
               No results — try another keyword
             </p>
           </div>
         )}
 
-        {/* Bottom CTA row (GitHub included) */}
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
           variants={containerVariants}
           custom={reduceMotion}
-          className="mt-20 flex flex-col md:flex-row items-center justify-between gap-6 rounded-[2.4rem] border border-cyan-500/12 bg-black/45 backdrop-blur-xl p-6 md:p-8"
+          className="mt-16 sm:mt-20 flex flex-col md:flex-row items-center justify-between gap-6 rounded-[2.4rem] border border-cyan-500/12 bg-black/45 backdrop-blur-xl p-5 sm:p-6 md:p-8"
         >
           <motion.div variants={itemVariants} custom={reduceMotion} className="text-center md:text-left">
             <p className="text-white font-semibold text-lg">Want the full list?</p>

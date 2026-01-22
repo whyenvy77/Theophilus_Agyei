@@ -25,15 +25,12 @@ import TacticalButton from "../components/TacticalButton";
 /** ---------------------------
  *  Helpers
  * -------------------------- */
-
-// Stable short hash for serials (deterministic per filename)
 function shortHash(input) {
-  let h = 2166136261; // FNV-1a base
+  let h = 2166136261;
   for (let i = 0; i < input.length; i++) {
     h ^= input.charCodeAt(i);
     h = Math.imul(h, 16777619);
   }
-  // 4 chars base36 uppercase
   return (h >>> 0).toString(36).toUpperCase().slice(0, 4).padEnd(4, "X");
 }
 
@@ -46,19 +43,12 @@ function joinUrl(base, path) {
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { delayChildren: 0.2, staggerChildren: 0.15 },
-  },
+  visible: { opacity: 1, transition: { delayChildren: 0.2, staggerChildren: 0.15 } },
 };
 
 const itemVariants = {
   hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { type: "spring", stiffness: 150, damping: 20 },
-  },
+  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 150, damping: 20 } },
 };
 
 /** ---------------------------
@@ -125,10 +115,10 @@ function MagneticTilt({ children, className = "" }) {
   function onMove(e) {
     if (reduceMotion) return;
     const rect = e.currentTarget.getBoundingClientRect();
-    const px = (e.clientX - rect.left) / rect.width; // 0..1
-    const py = (e.clientY - rect.top) / rect.height; // 0..1
-    const rY = (px - 0.5) * 10; // rotateY
-    const rX = (0.5 - py) * 10; // rotateX
+    const px = (e.clientX - rect.left) / rect.width;
+    const py = (e.clientY - rect.top) / rect.height;
+    const rY = (px - 0.5) * 10;
+    const rX = (0.5 - py) * 10;
     setStyle({
       transform: `perspective(900px) rotateX(${rX}deg) rotateY(${rY}deg) translateY(-2px)`,
     });
@@ -153,7 +143,7 @@ function MagneticTilt({ children, className = "" }) {
 }
 
 /** ---------------------------
- *  Ambient Rings (background)
+ *  Ambient Rings
  * -------------------------- */
 function AmbientRings() {
   const rings = useMemo(
@@ -177,16 +167,9 @@ function AmbientRings() {
           animate={{ opacity: [0.06, 0.12, 0.06], scale: [0.95, 1.05, 0.95] }}
           transition={{ duration: 8, repeat: Infinity, delay: r.delay, ease: "easeInOut" }}
           className="absolute rounded-full border border-cyan-500/10 bg-cyan-500/5"
-          style={{
-            width: r.size,
-            height: r.size,
-            top: r.top,
-            left: r.left,
-            filter: "blur(0.5px)",
-          }}
+          style={{ width: r.size, height: r.size, top: r.top, left: r.left, filter: "blur(0.5px)" }}
         />
       ))}
-      {/* soft glow wash */}
       <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[900px] bg-cyan-600/10 blur-[200px] rounded-full" />
     </div>
   );
@@ -194,11 +177,9 @@ function AmbientRings() {
 
 /** ---------------------------
  *  Mini HUD: Operational Log
- *  - Now it actually updates time every second
  * -------------------------- */
 const OperationalLog = memo(function OperationalLog() {
   const [now, setNow] = useState(() => new Date());
-
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
@@ -209,7 +190,6 @@ const OperationalLog = memo(function OperationalLog() {
       <div className="flex items-center gap-2 text-cyan-400 border-b border-cyan-500/20 pb-2 mb-1">
         <Terminal size={12} /> PROFILE
       </div>
-
       <div className="space-y-1">
         <div className="flex justify-between">
           <span>FULL NAME</span>
@@ -228,7 +208,6 @@ const OperationalLog = memo(function OperationalLog() {
           <span>LOW</span>
         </div>
       </div>
-
       <div className="mt-2 pt-2 border-t border-cyan-500/20 text-[8px] opacity-40">
         LAST_SYNC: {now.toLocaleTimeString()}
       </div>
@@ -237,14 +216,9 @@ const OperationalLog = memo(function OperationalLog() {
 });
 
 /** ---------------------------
- *  Credential Card (memoized)
+ *  Credential Card
  * -------------------------- */
-const CompactCredentialCard = memo(function CompactCredentialCard({
-  title,
-  type,
-  icon: Icon,
-  filename,
-}) {
+const CompactCredentialCard = memo(function CompactCredentialCard({ title, type, icon: Icon, filename }) {
   const reduceMotion = useReducedMotion();
 
   const encoded = useMemo(() => encodeURIComponent(filename), [filename]);
@@ -259,7 +233,6 @@ const CompactCredentialCard = memo(function CompactCredentialCard({
       whileHover={reduceMotion ? undefined : { y: -4 }}
       className="group relative flex flex-col p-6 rounded-3xl border border-cyan-500/10 bg-black/60 backdrop-blur-xl hover:border-cyan-500/40 transition-all duration-500 focus-within:border-cyan-500/40"
     >
-      {/* Subtle scanline glow */}
       <div className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
         <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-cyan-500/10 via-transparent to-transparent" />
       </div>
@@ -273,15 +246,10 @@ const CompactCredentialCard = memo(function CompactCredentialCard({
         </div>
       </div>
 
-      <h3
-        className="text-lg font-black text-white mb-1 uppercase tracking-tighter truncate relative z-10"
-        title={title}
-      >
+      <h3 className="text-lg font-black text-white mb-1 uppercase tracking-tighter truncate relative z-10" title={title}>
         {title}
       </h3>
-      <p className="text-[10px] font-mono text-cyan-400/60 uppercase mb-6 relative z-10">
-        {type}
-      </p>
+      <p className="text-[10px] font-mono text-cyan-400/60 uppercase mb-6 relative z-10">{type}</p>
 
       <div className="mt-auto flex gap-2 relative z-10">
         <TacticalButton to={`/preview/${encoded}`} size="sm" containerClassName="flex-1">
@@ -295,7 +263,6 @@ const CompactCredentialCard = memo(function CompactCredentialCard({
         </a>
       </div>
 
-      {/* Keyboard focus ring */}
       <div className="pointer-events-none absolute inset-0 rounded-3xl ring-0 group-focus-within:ring-2 group-focus-within:ring-cyan-500/40 transition" />
     </motion.div>
   );
@@ -304,40 +271,31 @@ const CompactCredentialCard = memo(function CompactCredentialCard({
 export default function Home() {
   const reduceMotion = useReducedMotion();
 
-  // Leave this scalable for later docs (certs, badges, etc.)
   const featuredCerts = useMemo(
     () => [
-      {
-        title: "Executive CV",
-        type: "PDF / Resume",
-        icon: FileText,
-        filename: "CV.pdf",
-      },
+      { title: "Executive CV", type: "PDF / Resume", icon: FileText, filename: "CV.pdf" },
     ],
     []
   );
 
   const base = useMemo(() => import.meta.env.BASE_URL || "/", []);
-  const cvDownloadUrl = useMemo(
-    () => joinUrl(base, `documents/${encodeURIComponent("CV.pdf")}`),
-    [base]
-  );
+  const cvDownloadUrl = useMemo(() => joinUrl(base, `documents/${encodeURIComponent("CV.pdf")}`), [base]);
 
   return (
-    <div className="bg-gray-950 overflow-x-hidden">
+    // ✅ Key: overflow-x-clip prevents “1px overflow” from any glow/transform
+    <div className="bg-gray-950 overflow-x-clip">
       <ScrollProgressBar />
 
       <section
         id="home"
-        className="relative min-h-[90vh] flex flex-col items-center justify-center pt-32 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden"
+        // ✅ Better for fixed navbar: pt matches your navbar height + breathing room
+        className="relative min-h-screen flex flex-col items-center justify-center pt-28 sm:pt-32 pb-14 px-4 sm:px-6 lg:px-8 overflow-hidden"
       >
         <NetworkBackground />
         <AmbientRings />
 
-        {/* Decorative HUD Elements */}
         <div className="absolute top-24 right-10 hidden xl:flex flex-col gap-4 z-20">
           <OperationalLog />
-
           <div className="flex flex-col gap-2 opacity-30 pointer-events-none">
             <div className="flex items-center gap-3 text-[10px] font-mono text-cyan-400 font-black">
               <div className="w-2 h-2 bg-cyan-500 animate-pulse rounded-full" />
@@ -353,203 +311,192 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Decorative Blur */}
         <div className="absolute top-1/4 -right-20 w-[600px] h-[600px] bg-cyan-600/10 blur-[180px] rounded-full pointer-events-none" />
         <div className="absolute bottom-1/4 -left-20 w-[500px] h-[500px] bg-blue-600/5 blur-[150px] rounded-full pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between w-full z-10 relative">
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={containerVariants}
-            className="flex-1 text-center md:text-left md:pr-12"
-          >
-            <motion.p variants={itemVariants} className="section-subtitle !text-cyan-400">
-              SYSTEM_OVERRIDE: Theophilus Agyei
-            </motion.p>
-
-            <motion.div variants={itemVariants} className="mt-4 flex justify-center md:justify-start">
-              <StatusChip />
-            </motion.div>
-
-            <motion.h1
-              variants={itemVariants}
-              className="text-6xl lg:text-9xl font-black text-white mb-4 tracking-tighter leading-[0.85] uppercase italic"
+        {/* ✅ Important: min-w-0 so children can shrink and wrap instead of overflowing */}
+        <div className="max-w-7xl mx-auto w-full z-10 relative min-w-0">
+          <div className="flex flex-col md:flex-row items-center justify-between w-full min-w-0">
+            {/* LEFT */}
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={containerVariants}
+              className="flex-1 text-center md:text-left md:pr-12 min-w-0"
             >
-              I Deploy{" "}
-              <span className="premium-gradient-text relative inline-block">
-                <motion.span
-                  animate={reduceMotion ? undefined : { x: [-1, 1, -1, 0], opacity: [1, 0.7, 1] }}
-                  transition={reduceMotion ? undefined : { repeat: Infinity, duration: 0.15, repeatDelay: 4 }}
-                  className="absolute inset-0 text-cyan-400 blur-[2px] -z-10"
-                >
+              <motion.p variants={itemVariants} className="section-subtitle !text-cyan-400">
+                SYSTEM_OVERRIDE: Theophilus Agyei
+              </motion.p>
+
+              <motion.div variants={itemVariants} className="mt-4 flex justify-center md:justify-start">
+                <StatusChip />
+              </motion.div>
+
+              {/* ✅ Responsive title that never breaks layout */}
+              <motion.h1
+                variants={itemVariants}
+                className={[
+                  "mt-4 mb-5 font-black text-white uppercase italic tracking-tight",
+                  "leading-[0.92] sm:leading-[0.88]",
+                  "text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl",
+                  "break-words",
+                ].join(" ")}
+              >
+                I Deploy{" "}
+                <span className="premium-gradient-text relative inline-block">
+                  <motion.span
+                    animate={reduceMotion ? undefined : { x: [-1, 1, -1, 0], opacity: [1, 0.7, 1] }}
+                    transition={reduceMotion ? undefined : { repeat: Infinity, duration: 0.15, repeatDelay: 4 }}
+                    className="absolute inset-0 text-cyan-400 blur-[2px] -z-10"
+                  >
+                    Secure
+                  </motion.span>
                   Secure
-                </motion.span>
-                Secure
-              </span>{" "}
-              <br /> Digital Assets
-            </motion.h1>
+                </span>{" "}
+                <br className="hidden sm:block" /> Digital Assets
+              </motion.h1>
 
-            <motion.div
-              variants={itemVariants}
-              className="mb-10 font-mono text-[10px] text-cyan-500/40 tracking-[0.4em] uppercase font-black flex items-center justify-center md:justify-start gap-4"
-            >
-              <span className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-cyan-500 rounded-sm animate-ping" />
-                STREAMING_CREDENTIALS:
-              </span>
-              <div className="flex gap-2 text-white/40">
-                <span className="animate-[pulse_1s_infinite]">#AES-256</span>
-                <span className="animate-[pulse_1.5s_infinite]">#ZERO_TRUST</span>
-                <span className="animate-[pulse_1.2s_infinite]">#SSL_TLS</span>
-              </div>
-            </motion.div>
-
-            <motion.div
-              variants={itemVariants}
-              className="text-cyan-400/80 text-xl lg:text-2xl mb-12 max-w-xl mx-auto md:mx-0 font-mono leading-relaxed uppercase tracking-tight"
-            >
-              <TypingText
-                texts={[
-                  "Ethical Hacker 🔐",
-                  "Full-Stack Security Dev 💻",
-                  "System Architect 🖥️",
-                  "Node • React • .NET • Kali Linux 🚀",
-                ]}
-              />
-            </motion.div>
-
-            <motion.div
-              variants={itemVariants}
-              className="flex justify-center md:justify-start gap-4 sm:gap-6 flex-wrap"
-            >
-              <TacticalButton to="/projects">
-                <span className="text-[10px] opacity-40">{"["}0x1{"]"}</span> VIEW PROJECTS
-              </TacticalButton>
-
-              <TacticalButton to="/contact">
-                <span className="text-[10px] opacity-40">{"["}0x2{"]"}</span> GET IN TOUCH 📤
-              </TacticalButton>
-            </motion.div>
-
-            {/* Quick Actions Strip */}
-            <motion.div
-              variants={itemVariants}
-              className="mt-6 flex flex-wrap gap-3 justify-center md:justify-start"
-            >
-              <a
-                href={cvDownloadUrl}
-                download="CV.pdf"
-                className="group inline-flex items-center gap-2 px-4 py-3 rounded-2xl border border-cyan-500/15 bg-black/40 backdrop-blur-md hover:border-cyan-500/40 transition"
-              >
-                <Sparkles size={16} className="text-cyan-300 group-hover:scale-110 transition" />
-                <span className="text-[10px] font-mono text-cyan-100/80 uppercase tracking-widest font-black">
-                  Download_CV
-                </span>
-                <ArrowUpRight
-                  size={16}
-                  className="text-cyan-400/70 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition"
-                />
-              </a>
-
-              <Link
-                to="/documents"
-                className="group inline-flex items-center gap-2 px-4 py-3 rounded-2xl border border-cyan-500/15 bg-black/40 backdrop-blur-md hover:border-cyan-500/40 transition"
-              >
-                <FileText size={16} className="text-cyan-300 group-hover:scale-110 transition" />
-                <span className="text-[10px] font-mono text-cyan-100/80 uppercase tracking-widest font-black">
-                  Open_Vault
-                </span>
-                <ArrowUpRight
-                  size={16}
-                  className="text-cyan-400/70 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition"
-                />
-              </Link>
-
-              <Link
-                to="/contact"
-                className="group inline-flex items-center gap-2 px-4 py-3 rounded-2xl border border-cyan-500/15 bg-black/40 backdrop-blur-md hover:border-cyan-500/40 transition"
-              >
-                <Mail size={16} className="text-cyan-300 group-hover:scale-110 transition" />
-                <span className="text-[10px] font-mono text-cyan-100/80 uppercase tracking-widest font-black">
-                  Ping_Me
-                </span>
-                <ArrowUpRight
-                  size={16}
-                  className="text-cyan-400/70 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition"
-                />
-              </Link>
-            </motion.div>
-
-            <motion.div variants={itemVariants} className="mt-16 flex justify-center md:justify-start">
-              <SocialIcons />
-            </motion.div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 50 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-            className="flex-1 mt-20 md:mt-0 flex justify-center md:justify-end relative group"
-          >
-            <div className="absolute inset-0 bg-cyan-500/20 blur-[100px] rounded-full group-hover:bg-cyan-500/30 transition-all duration-700 scale-125 translate-y-4 pointer-events-none" />
-
-            <MagneticTilt className="relative z-10">
+              {/* ✅ Make this row wrap safely on small screens */}
               <motion.div
-                animate={reduceMotion ? undefined : { y: [0, -20, 0] }}
-                transition={
-                  reduceMotion ? undefined : { duration: 8, repeat: Infinity, ease: "easeInOut" }
-                }
+                variants={itemVariants}
+                className="mb-10 font-mono text-[10px] text-cyan-500/40 uppercase font-black flex flex-wrap items-center justify-center md:justify-start gap-3 sm:gap-4"
               >
-                <div className="relative p-2 rounded-full border border-cyan-500/20 bg-black backdrop-blur-md shadow-2xl shadow-cyan-900/20 ring-1 ring-cyan-500/10 group">
-                  {/* Hover HUD overlay */}
-                  <div className="absolute inset-0 z-20 pointer-events-none border border-cyan-500/20 rounded-full scale-110 opacity-0 group-hover:opacity-100 transition-all duration-500">
-                    <div className="absolute top-0 right-10 p-2 text-[8px] font-mono text-cyan-400 bg-black/80 rounded font-black border border-cyan-500/20 translate-y-[-50%]">
-                      TARGET_LOCKED
-                    </div>
-                    <div className="absolute bottom-10 left-0 p-2 text-[8px] font-mono text-cyan-400 bg-black/80 rounded font-black border border-cyan-500/20 translate-x-[-20%]">
-                      ID_MATCH: 100%
-                    </div>
-                  </div>
+                <span className="flex items-center gap-2 tracking-[0.22em] sm:tracking-[0.35em]">
+                  <span className="w-1.5 h-1.5 bg-cyan-500 rounded-sm animate-ping" />
+                  STREAMING_CREDENTIALS:
+                </span>
 
-                  {/* Telemetry */}
-                  <div className="absolute top-1/4 -right-12 z-30 opacity-0 group-hover:opacity-100 transition-all duration-700 translate-x-4 group-hover:translate-x-0 hidden lg:block">
-                    <TelemetryHUD label="THREAT_MITIGATION" value="99.8%" color="blue" className="w-40" />
-                  </div>
-                  <div className="absolute bottom-1/4 -left-20 z-30 opacity-0 group-hover:opacity-100 transition-all duration-700 -translate-x-4 group-hover:translate-x-0 hidden lg:block">
-                    <TelemetryHUD label="SYSTEM_HARDENING" value="v9.4" color="cyan" className="w-40" />
-                  </div>
-
-                  <img
-                    src={profilePic}
-                    alt="Theophilus Agyei"
-                    loading="lazy"
-                    decoding="async"
-                    className="w-72 h-72 md:w-80 md:h-80 lg:w-[450px] lg:h-[450px] rounded-full border border-cyan-500/30 object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-700 relative z-10"
-                  />
-
-                  <div className="absolute -inset-4 border border-dashed border-cyan-500/10 rounded-full animate-[spin_20s_linear_infinite] pointer-events-none" />
+                <div className="flex flex-wrap gap-2 text-white/40 justify-center md:justify-start">
+                  <span className="animate-[pulse_1s_infinite] tracking-[0.18em]">#AES-256</span>
+                  <span className="animate-[pulse_1.5s_infinite] tracking-[0.18em]">#ZERO_TRUST</span>
+                  <span className="animate-[pulse_1.2s_infinite] tracking-[0.18em]">#SSL_TLS</span>
                 </div>
               </motion.div>
-            </MagneticTilt>
-          </motion.div>
+
+              <motion.div
+                variants={itemVariants}
+                className="text-cyan-400/80 text-lg sm:text-xl lg:text-2xl mb-12 max-w-xl mx-auto md:mx-0 font-mono leading-relaxed uppercase tracking-tight"
+              >
+                <TypingText
+                  texts={[
+                    "Ethical Hacker 🔐",
+                    "Full-Stack Security Dev 💻",
+                    "System Architect 🖥️",
+                    "Node • React • .NET • Kali Linux 🚀",
+                  ]}
+                />
+              </motion.div>
+
+              <motion.div variants={itemVariants} className="flex justify-center md:justify-start gap-4 sm:gap-6 flex-wrap">
+                <TacticalButton to="/projects">
+                  <span className="text-[10px] opacity-40">{"["}0x1{"]"}</span> VIEW PROJECTS
+                </TacticalButton>
+
+                <TacticalButton to="/contact">
+                  <span className="text-[10px] opacity-40">{"["}0x2{"]"}</span> GET IN TOUCH 📤
+                </TacticalButton>
+              </motion.div>
+
+              <motion.div variants={itemVariants} className="mt-6 flex flex-wrap gap-3 justify-center md:justify-start">
+                <a
+                  href={cvDownloadUrl}
+                  download="CV.pdf"
+                  className="group inline-flex items-center gap-2 px-4 py-3 rounded-2xl border border-cyan-500/15 bg-black/40 backdrop-blur-md hover:border-cyan-500/40 transition"
+                >
+                  <Sparkles size={16} className="text-cyan-300 group-hover:scale-110 transition" />
+                  <span className="text-[10px] font-mono text-cyan-100/80 uppercase tracking-widest font-black">
+                    Download_CV
+                  </span>
+                  <ArrowUpRight size={16} className="text-cyan-400/70 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition" />
+                </a>
+
+                <Link
+                  to="/documents"
+                  className="group inline-flex items-center gap-2 px-4 py-3 rounded-2xl border border-cyan-500/15 bg-black/40 backdrop-blur-md hover:border-cyan-500/40 transition"
+                >
+                  <FileText size={16} className="text-cyan-300 group-hover:scale-110 transition" />
+                  <span className="text-[10px] font-mono text-cyan-100/80 uppercase tracking-widest font-black">
+                    Open_Vault
+                  </span>
+                  <ArrowUpRight size={16} className="text-cyan-400/70 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition" />
+                </Link>
+
+                <Link
+                  to="/contact"
+                  className="group inline-flex items-center gap-2 px-4 py-3 rounded-2xl border border-cyan-500/15 bg-black/40 backdrop-blur-md hover:border-cyan-500/40 transition"
+                >
+                  <Mail size={16} className="text-cyan-300 group-hover:scale-110 transition" />
+                  <span className="text-[10px] font-mono text-cyan-100/80 uppercase tracking-widest font-black">
+                    Ping_Me
+                  </span>
+                  <ArrowUpRight size={16} className="text-cyan-400/70 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition" />
+                </Link>
+              </motion.div>
+
+              <motion.div variants={itemVariants} className="mt-14 sm:mt-16 flex justify-center md:justify-start">
+                <SocialIcons />
+              </motion.div>
+            </motion.div>
+
+            {/* RIGHT (Image) */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 50 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+              className="flex-1 mt-14 sm:mt-20 md:mt-0 flex justify-center md:justify-end relative group min-w-0"
+            >
+              <div className="absolute inset-0 bg-cyan-500/20 blur-[100px] rounded-full group-hover:bg-cyan-500/30 transition-all duration-700 scale-125 translate-y-4 pointer-events-none" />
+
+              <MagneticTilt className="relative z-10">
+                <motion.div
+                  animate={reduceMotion ? undefined : { y: [0, -14, 0] }}
+                  transition={reduceMotion ? undefined : { duration: 8, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <div className="relative p-2 rounded-full border border-cyan-500/20 bg-black backdrop-blur-md shadow-2xl shadow-cyan-900/20 ring-1 ring-cyan-500/10">
+                    <div className="absolute top-1/4 -right-12 z-30 opacity-0 group-hover:opacity-100 transition-all duration-700 translate-x-4 group-hover:translate-x-0 hidden lg:block">
+                      <TelemetryHUD label="THREAT_MITIGATION" value="99.8%" color="blue" className="w-40" />
+                    </div>
+                    <div className="absolute bottom-1/4 -left-20 z-30 opacity-0 group-hover:opacity-100 transition-all duration-700 -translate-x-4 group-hover:translate-x-0 hidden lg:block">
+                      <TelemetryHUD label="SYSTEM_HARDENING" value="v9.4" color="cyan" className="w-40" />
+                    </div>
+
+                    {/* ✅ Image sizing that never forces overflow */}
+                    <img
+                      src={profilePic}
+                      alt="Theophilus Agyei"
+                      loading="lazy"
+                      decoding="async"
+                      className={[
+                        "rounded-full border border-cyan-500/30 object-cover grayscale brightness-75",
+                        "group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-700 relative z-10",
+                        "w-64 h-64 sm:w-72 sm:h-72 md:w-80 md:h-80 lg:w-[420px] lg:h-[420px]",
+                        "max-w-full",
+                      ].join(" ")}
+                    />
+
+                    <div className="absolute -inset-4 border border-dashed border-cyan-500/10 rounded-full animate-[spin_20s_linear_infinite] pointer-events-none" />
+                  </div>
+                </motion.div>
+              </MagneticTilt>
+            </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Verified Credentials */}
-      <section className="relative py-32 px-4 sm:px-6 lg:px-8 z-30">
+      <section className="relative py-24 sm:py-32 px-4 sm:px-6 lg:px-8 z-30 overflow-x-clip">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mb-16 flex flex-col md:flex-row items-end justify-between gap-6"
+            className="mb-12 sm:mb-16 flex flex-col md:flex-row items-end justify-between gap-6"
           >
             <div className="max-w-xl">
               <p className="section-subtitle !mb-2 flex items-center gap-2">
                 <ShieldCheck size={14} className="text-cyan-400" aria-hidden="true" /> AUTHORIZED_ASSETS
               </p>
-              <h2 className="text-4xl md:text-6xl font-black text-white uppercase italic tracking-tighter leading-none">
+              <h2 className="text-3xl sm:text-4xl md:text-6xl font-black text-white uppercase italic tracking-tighter leading-none">
                 Verified <span className="premium-gradient-text">Credentials</span>
               </h2>
             </div>
@@ -569,14 +516,13 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Live Stats Bar */}
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="mt-20 p-8 rounded-[2rem] border border-cyan-500/10 bg-black/40 backdrop-blur-md flex flex-wrap items-center justify-between gap-8"
+            className="mt-14 sm:mt-20 p-6 sm:p-8 rounded-[2rem] border border-cyan-500/10 bg-black/40 backdrop-blur-md flex flex-wrap items-center justify-between gap-8"
           >
-            <div className="flex items-center gap-6">
+            <div className="flex flex-wrap items-center gap-6">
               <div className="flex flex-col">
                 <span className="text-[8px] font-mono text-cyan-500/40 uppercase tracking-widest font-black">
                   LAST_DEPLOYMENT

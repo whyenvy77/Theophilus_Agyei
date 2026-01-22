@@ -13,16 +13,7 @@ export default function NetworkBackground() {
     let particles = [];
     let pulses = [];
 
-    // NEW: radar ping (subtle) + target lock
-    const radar = {
-      x: null,
-      y: null,
-      r: 0,
-      active: false,
-      speed: 2.2,
-    };
-
-    // NEW: respect reduced motion
+    // Respect reduced motion
     const prefersReducedMotion =
       typeof window !== "undefined" &&
       window.matchMedia &&
@@ -31,23 +22,47 @@ export default function NetworkBackground() {
     // HiDPI for crisp lines
     let dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-    // Responsive tuning
+    // Responsive tuning (reduced)
     const isSmallScreen = window.innerWidth < 768;
     const isMediumScreen = window.innerWidth < 1200;
 
-    const particleCount = isSmallScreen ? 35 : isMediumScreen ? 65 : 105;
-    const connectionDistance = isSmallScreen ? 95 : isMediumScreen ? 135 : 175;
+    // ✅ LOWER density + simpler feel
+    const particleCount = isSmallScreen ? 18 : isMediumScreen ? 30 : 48; // was 35/65/105
+    const connectionDistance = isSmallScreen ? 80 : isMediumScreen ? 110 : 140; // was 95/135/175
 
+    // ✅ Smaller interaction radius
     const mouse = {
       x: null,
       y: null,
-      radius: isSmallScreen ? 110 : isMediumScreen ? 170 : 230,
+      radius: isSmallScreen ? 85 : isMediumScreen ? 120 : 160, // was 110/170/230
     };
+
+    // ✅ Disable click shockwave by default (too much)
+    const ENABLE_SHOCKWAVE = false;
 
     const clickWave = { x: null, y: null, radius: 0, active: false };
 
+    // ✅ Radar: disabled by default (too much)
+    const ENABLE_RADAR = false;
+    const radar = {
+      x: null,
+      y: null,
+      r: 0,
+      active: false,
+      speed: 1.0, // slower (was 2.2)
+    };
+
+    // ✅ Lower trail intensity (less “busy”)
+    const TRAIL_ALPHA = 0.14; // was 0.20
+
+    // ✅ Fewer pulses
+    const MAX_PULSES = 4; // was 10
+    const PULSE_CHANCE = 0.99985; // was 0.9995 (more frequent). Higher = rarer.
+
+    // ✅ Only animate on desktop for heavy effects
+    const ALLOW_HEAVY_EFFECTS = !isSmallScreen && !prefersReducedMotion;
+
     const resizeCanvas = () => {
-      // Fit viewport
       const w = window.innerWidth;
       const h = window.innerHeight;
 
@@ -60,13 +75,12 @@ export default function NetworkBackground() {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
-    // Small throttle for resize
     let resizeTimer;
     const onResize = () => {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
         resizeCanvas();
-        init(); // keep density consistent
+        init();
       }, 120);
     };
 
@@ -77,19 +91,23 @@ export default function NetworkBackground() {
       mouse.x = event.clientX;
       mouse.y = event.clientY;
 
-      // NEW: radar follows cursor, activates
-      radar.x = mouse.x;
-      radar.y = mouse.y;
-      radar.active = true;
+      if (ENABLE_RADAR && ALLOW_HEAVY_EFFECTS) {
+        radar.x = mouse.x;
+        radar.y = mouse.y;
+        radar.active = true;
+      }
     };
 
     const handleTouchMove = (event) => {
       if (event.touches && event.touches[0]) {
         mouse.x = event.touches[0].clientX;
         mouse.y = event.touches[0].clientY;
-        radar.x = mouse.x;
-        radar.y = mouse.y;
-        radar.active = true;
+
+        if (ENABLE_RADAR && ALLOW_HEAVY_EFFECTS) {
+          radar.x = mouse.x;
+          radar.y = mouse.y;
+          radar.active = true;
+        }
       }
     };
 
@@ -101,6 +119,8 @@ export default function NetworkBackground() {
     };
 
     const handleClick = (event) => {
+      if (!ENABLE_SHOCKWAVE) return;
+
       const x = event.touches ? event.touches[0].clientX : event.clientX;
       const y = event.touches ? event.touches[0].clientY : event.clientY;
 
@@ -109,16 +129,17 @@ export default function NetworkBackground() {
       clickWave.radius = 0;
       clickWave.active = true;
 
-      // Make the click feel “reactive”
+      // Very subtle reaction
       particles.forEach((p) => {
-        if (Math.random() > 0.7) p.hue = (p.hue + 60) % 360;
+        if (Math.random() > 0.9) p.hue = (p.hue + 20) % 360;
       });
 
-      // Also trigger a radar burst
-      radar.x = x;
-      radar.y = y;
-      radar.active = true;
-      radar.r = 0;
+      if (ENABLE_RADAR && ALLOW_HEAVY_EFFECTS) {
+        radar.x = x;
+        radar.y = y;
+        radar.active = true;
+        radar.r = 0;
+      }
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -130,7 +151,7 @@ export default function NetworkBackground() {
 
     class Particle {
       constructor(layer = 1) {
-        this.layer = layer; // 1 for foreground, 0.5 for background
+        this.layer = layer;
         this.reset();
       }
 
@@ -141,14 +162,16 @@ export default function NetworkBackground() {
         this.x = Math.random() * w;
         this.y = Math.random() * h;
 
-        this.size = (Math.random() * 2 + 1) * this.layer;
-        this.speedX = (Math.random() - 0.5) * 0.7 * this.layer;
-        this.speedY = (Math.random() - 0.5) * 0.7 * this.layer;
+        // ✅ Smaller, calmer
+        this.size = (Math.random() * 1.3 + 0.9) * this.layer; // was up to 3
+        this.speedX = (Math.random() - 0.5) * 0.28 * this.layer; // was 0.7
+        this.speedY = (Math.random() - 0.5) * 0.28 * this.layer;
 
-        this.hue = 180 + Math.random() * 30; // Neon Cyan → Blue
-        this.opacity = (Math.random() * 0.4 + 0.3) * this.layer;
+        this.hue = 182 + Math.random() * 18;
+        this.opacity = (Math.random() * 0.25 + 0.22) * this.layer; // was 0.3..0.7
 
-        this.pulseSpeed = 0.01 + Math.random() * 0.02;
+        // ✅ Slower pulse
+        this.pulseSpeed = 0.006 + Math.random() * 0.01; // was 0.01..0.03
         this.pulseDir = 1;
       }
 
@@ -156,22 +179,23 @@ export default function NetworkBackground() {
         const w = window.innerWidth;
         const h = window.innerHeight;
 
+        // ✅ Keep gentle motion even if not reduced motion, but slower
         if (!prefersReducedMotion) {
           this.x += this.speedX;
           this.y += this.speedY;
         }
 
-        // Color cycle shift
-        this.hue += 0.08;
-        if (this.hue > 210) this.hue = 180;
+        // ✅ Very subtle hue drift
+        this.hue += 0.03; // was 0.08
+        if (this.hue > 205) this.hue = 182;
 
-        // Opacity pulse
+        // ✅ Softer opacity pulse
         this.opacity += this.pulseSpeed * this.pulseDir;
-        if (this.opacity > 0.8 * this.layer || this.opacity < 0.2 * this.layer) {
-          this.pulseDir *= -1;
-        }
+        const maxO = 0.55 * this.layer;
+        const minO = 0.18 * this.layer;
+        if (this.opacity > maxO || this.opacity < minO) this.pulseDir *= -1;
 
-        // Mouse/Touch interaction (with safe distance check)
+        // Mouse attraction (reduced force)
         if (mouse.x !== null) {
           const dx = mouse.x - this.x;
           const dy = mouse.y - this.y;
@@ -179,31 +203,32 @@ export default function NetworkBackground() {
 
           if (distance < mouse.radius * this.layer) {
             const force = (mouse.radius * this.layer - distance) / (mouse.radius * this.layer);
-            const attraction = 0.8 * force * this.layer;
+            const attraction = 0.28 * force * this.layer; // was 0.8
 
             this.speedX += (dx / distance) * attraction;
             this.speedY += (dy / distance) * attraction;
 
-            this.speedX *= 0.92;
-            this.speedY *= 0.92;
+            // damping stronger = calmer
+            this.speedX *= 0.88; // was 0.92
+            this.speedY *= 0.88;
 
-            // tiny swirl = “cyber fluid”
-            this.speedX += (dy / distance) * 0.02 * this.layer;
-            this.speedY -= (dx / distance) * 0.02 * this.layer;
+            // ✅ Reduce swirl a lot
+            this.speedX += (dy / distance) * 0.006 * this.layer; // was 0.02
+            this.speedY -= (dx / distance) * 0.006 * this.layer;
           }
         }
 
-        // Shockwave repulsion (safe distance)
-        if (clickWave.active) {
+        // Optional shockwave repulsion (disabled by default)
+        if (ENABLE_SHOCKWAVE && clickWave.active) {
           const dx = this.x - clickWave.x;
           const dy = this.y - clickWave.y;
           const distance = Math.sqrt(dx * dx + dy * dy) || 0.0001;
 
-          if (Math.abs(distance - clickWave.radius) < 30) {
-            const push = 18 * this.layer;
+          if (Math.abs(distance - clickWave.radius) < 24) {
+            const push = 10 * this.layer; // was 18
             this.x += (dx / distance) * push;
             this.y += (dy / distance) * push;
-            this.hue += 25;
+            this.hue += 10;
           }
         }
 
@@ -219,7 +244,14 @@ export default function NetworkBackground() {
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
 
         const color = `hsla(${this.hue}, 80%, 70%, ${this.opacity})`;
-        const glow = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 5);
+        const glow = ctx.createRadialGradient(
+          this.x,
+          this.y,
+          0,
+          this.x,
+          this.y,
+          this.size * 4
+        );
         glow.addColorStop(0, color);
         glow.addColorStop(1, "transparent");
 
@@ -233,7 +265,7 @@ export default function NetworkBackground() {
         this.p1 = p1;
         this.p2 = p2;
         this.progress = 0;
-        this.speed = 0.02 + Math.random() * 0.03;
+        this.speed = 0.012 + Math.random() * 0.016; // slower (was 0.02..0.05)
         this.hue = p1.hue;
       }
 
@@ -248,10 +280,10 @@ export default function NetworkBackground() {
         const y = this.p1.y + (this.p2.y - this.p1.y) * this.progress;
 
         ctx.beginPath();
-        ctx.arc(x, y, 3, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${this.hue}, 100%, 80%, 0.8)`;
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = `hsla(${this.hue}, 100%, 80%, 0.5)`;
+        ctx.arc(x, y, 2.2, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${this.hue}, 100%, 80%, 0.55)`;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = `hsla(${this.hue}, 100%, 80%, 0.25)`;
         ctx.fill();
         ctx.shadowBlur = 0;
       }
@@ -260,9 +292,8 @@ export default function NetworkBackground() {
     const init = () => {
       particles = [];
       pulses = [];
-
       for (let i = 0; i < particleCount; i++) {
-        const layer = Math.random() > 0.6 ? 1 : 0.5;
+        const layer = Math.random() > 0.7 ? 1 : 0.5;
         particles.push(new Particle(layer));
       }
     };
@@ -275,7 +306,8 @@ export default function NetworkBackground() {
           const distance = Math.sqrt(dx * dx + dy * dy);
 
           if (distance < connectionDistance) {
-            const alpha = (1 - distance / connectionDistance) * 0.28;
+            // ✅ dimmer lines
+            const alpha = (1 - distance / connectionDistance) * 0.18; // was 0.28
             ctx.beginPath();
 
             const grad = ctx.createLinearGradient(
@@ -288,13 +320,13 @@ export default function NetworkBackground() {
             grad.addColorStop(1, `hsla(${particles[j].hue}, 70%, 65%, ${alpha})`);
 
             ctx.strokeStyle = grad;
-            ctx.lineWidth = (particles[i].layer + particles[j].layer) / 2;
+            ctx.lineWidth = 0.8 * ((particles[i].layer + particles[j].layer) / 2); // slightly thinner
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
             ctx.stroke();
 
-            // Occasional data pulse
-            if (!prefersReducedMotion && Math.random() > 0.9995 && pulses.length < 10) {
+            // ✅ rarer + fewer pulses
+            if (!prefersReducedMotion && Math.random() > PULSE_CHANCE && pulses.length < MAX_PULSES) {
               pulses.push(new Pulse(particles[i], particles[j]));
             }
           }
@@ -302,39 +334,22 @@ export default function NetworkBackground() {
       }
     };
 
-    // NEW: Radar ping + “target lock” ring
     const drawRadar = () => {
+      if (!ENABLE_RADAR || !ALLOW_HEAVY_EFFECTS) return;
       if (!radar.active || radar.x == null) return;
-      if (prefersReducedMotion) return;
 
       radar.r += radar.speed;
-      if (radar.r > 220) radar.r = 0;
+      if (radar.r > 180) radar.r = 0;
 
-      // Outer expanding ring
       ctx.beginPath();
       ctx.arc(radar.x, radar.y, radar.r, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(34, 211, 238, ${0.22 * (1 - radar.r / 220)})`;
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = `rgba(34, 211, 238, ${0.12 * (1 - radar.r / 180)})`;
+      ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      // Inner static lock ring
       ctx.beginPath();
-      ctx.arc(radar.x, radar.y, 22, 0, Math.PI * 2);
-      ctx.strokeStyle = "rgba(34, 211, 238, 0.25)";
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      // Crosshair lines
-      ctx.beginPath();
-      ctx.moveTo(radar.x - 28, radar.y);
-      ctx.lineTo(radar.x - 16, radar.y);
-      ctx.moveTo(radar.x + 16, radar.y);
-      ctx.lineTo(radar.x + 28, radar.y);
-      ctx.moveTo(radar.x, radar.y - 28);
-      ctx.lineTo(radar.x, radar.y - 16);
-      ctx.moveTo(radar.x, radar.y + 16);
-      ctx.lineTo(radar.x, radar.y + 28);
-      ctx.strokeStyle = "rgba(34, 211, 238, 0.18)";
+      ctx.arc(radar.x, radar.y, 18, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(34, 211, 238, 0.14)";
       ctx.lineWidth = 1;
       ctx.stroke();
     };
@@ -343,32 +358,31 @@ export default function NetworkBackground() {
       const w = window.innerWidth;
       const h = window.innerHeight;
 
-      // Background fade (trail)
-      ctx.fillStyle = "rgba(3, 7, 18, 0.20)";
+      ctx.fillStyle = `rgba(3, 7, 18, ${TRAIL_ALPHA})`;
       ctx.fillRect(0, 0, w, h);
 
-      // Click shockwave
-      if (clickWave.active && !prefersReducedMotion) {
-        clickWave.radius += 14;
-        if (clickWave.radius > w * 1.5) clickWave.active = false;
+      // Optional shockwave (off)
+      if (ENABLE_SHOCKWAVE && clickWave.active && !prefersReducedMotion) {
+        clickWave.radius += 10;
+        if (clickWave.radius > w * 1.2) clickWave.active = false;
 
         ctx.beginPath();
         ctx.arc(clickWave.x, clickWave.y, clickWave.radius, 0, Math.PI * 2);
-        ctx.strokeStyle = `hsla(180, 100%, 70%, ${0.35 * (1 - clickWave.radius / (w * 1.5))})`;
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = `hsla(180, 100%, 70%, ${0.18 * (1 - clickWave.radius / (w * 1.2))})`;
+        ctx.lineWidth = 2;
         ctx.stroke();
       }
 
-      // Mouse glow
-      if (mouse.x !== null && !prefersReducedMotion) {
-        const mouseGlow = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 150);
-        mouseGlow.addColorStop(0, "rgba(34, 211, 238, 0.12)");
+      // ✅ Softer mouse glow
+      if (mouse.x !== null && !prefersReducedMotion && !isSmallScreen) {
+        const r = 120;
+        const mouseGlow = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, r);
+        mouseGlow.addColorStop(0, "rgba(34, 211, 238, 0.07)");
         mouseGlow.addColorStop(1, "transparent");
         ctx.fillStyle = mouseGlow;
-        ctx.fillRect(mouse.x - 150, mouse.y - 150, 300, 300);
+        ctx.fillRect(mouse.x - r, mouse.y - r, r * 2, r * 2);
       }
 
-      // NEW: radar / crosshair
       drawRadar();
 
       particles.forEach((p) => {
@@ -403,5 +417,11 @@ export default function NetworkBackground() {
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none opacity-70" />;
+  // ✅ Slightly lower opacity so it feels calmer
+  return (
+    <canvas
+      ref={canvasRef}
+      className="fixed inset-0 z-0 pointer-events-none opacity-55"
+    />
+  );
 }
