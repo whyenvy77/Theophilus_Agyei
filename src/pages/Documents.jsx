@@ -275,6 +275,16 @@ export default function Documents() {
       note: "Security-focused full-stack developer resume.",
       badge: "Verified",
     },
+
+     {
+      title: "Ethical Hacking Bootcamp ",
+      type: "PDF",
+      date: "Jan 2026",
+      icon: FileText,
+      filename: "theo.pdf",
+      note: "Security-focused full-stack developer resume.",
+      badge: "Verified",
+    },
   ];
 
   return (
